@@ -1,4 +1,9 @@
+-- =====================================================================
 -- Testbench da Pratica 5 (LED liga/desliga com um botao)
+--
+-- Simula quatro apertos de duracoes diferentes e confere que cada
+-- aperto inverte o LED exatamente uma vez, mesmo quando e longo.
+-- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -9,13 +14,14 @@ architecture sim of tb_pratica5 is
     constant T : time := 20 ns;
     signal clk   : std_logic := '0';
     signal reset : std_logic := '1';
-    signal btn   : std_logic := '0';
+    signal btn   : std_logic := '0';       -- botao comeca solto
     signal led   : std_logic;
     signal fim   : boolean := false;
 begin
     dut : entity work.pratica5
         port map (clk => clk, reset => reset, btn => btn, led => led);
 
+    -- Gerador de clock (para quando fim = true)
     relogio : process
     begin
         while not fim loop
@@ -26,7 +32,10 @@ begin
     end process;
 
     estimulos : process
-        -- aperta o botao por n ciclos de clock e solta
+        -- Procedimento auxiliar: aperta o botao por n ciclos de clock,
+        -- solta e espera 3 ciclos para a maquina estabilizar.
+        -- As mudancas sao feitas na borda de DESCIDA para ficarem longe
+        -- da borda de subida, que e quando a FSM le o botao.
         procedure apertar(n : positive) is
         begin
             wait until falling_edge(clk);
@@ -44,10 +53,10 @@ begin
         apertar(2);
         assert led = '1' report "1o aperto deveria ligar o LED" severity error;
 
-        apertar(10);   -- aperto longo: conta so uma vez
+        apertar(10);   -- aperto longo: tem que contar uma vez so
         assert led = '0' report "2o aperto deveria desligar o LED" severity error;
 
-        apertar(1);
+        apertar(1);    -- aperto minimo, de um unico ciclo
         assert led = '1' report "3o aperto deveria ligar o LED" severity error;
 
         apertar(5);

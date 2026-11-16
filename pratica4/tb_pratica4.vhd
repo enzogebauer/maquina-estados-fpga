@@ -1,4 +1,9 @@
--- Testbench da Pratica 4 (contador Gray 2 bits up/down)
+-- =====================================================================
+-- Testbench da Pratica 4 (contador Gray 2 bits progressivo/regressivo)
+--
+-- Primeiro conta para frente (x = '1'), depois inverte o sentido
+-- (x = '0') e confere a sequencia de tras para frente.
+-- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -13,13 +18,17 @@ architecture sim of tb_pratica4 is
     signal q     : std_logic_vector(1 downto 0);
     signal fim   : boolean := false;
 
+    -- Valores esperados apos cada borda de clock.
     type vet_t is array (natural range <>) of std_logic_vector(1 downto 0);
+    --   subindo a partir de 00: 01, 11, 10, 00, 01, 11
     constant SOBE  : vet_t := ("01", "11", "10", "00", "01", "11");
+    --   descendo a partir de 11 (onde a subida parou): 01, 00, 10, 11, 01, 00, 10
     constant DESCE : vet_t := ("01", "00", "10", "11", "01", "00", "10");
 begin
     dut : entity work.pratica4
         port map (clk => clk, reset => reset, x => x, q => q);
 
+    -- Gerador de clock (para quando fim = true)
     relogio : process
     begin
         while not fim loop
@@ -37,11 +46,11 @@ begin
 
         x <= '1';                                  -- progressivo
         for i in SOBE'range loop
-            wait until rising_edge(clk); wait for 1 ns;
+            wait until rising_edge(clk); wait for 1 ns;   -- le 1 ns apos a borda
             assert q = SOBE(i) report "subida errada no passo " & integer'image(i) severity error;
         end loop;
 
-        x <= '0';                                  -- regressivo (parte de 11)
+        x <= '0';                                  -- regressivo
         for i in DESCE'range loop
             wait until rising_edge(clk); wait for 1 ns;
             assert q = DESCE(i) report "descida errada no passo " & integer'image(i) severity error;

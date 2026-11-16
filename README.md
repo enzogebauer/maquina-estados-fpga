@@ -1,5 +1,7 @@
 # Práticas de Máquina de Estados (FSM) em VHDL, placa DE0-CV
 
+**Para entender o código, leia [EXPLICACAO.md](EXPLICACAO.md):** ele explica cada prática, com diagrama de estados e o que esperar na simulação e na placa.
+
 Cada pasta `praticaN` é um projeto do Quartus Prime 20.1 Lite, montado para o dispositivo 5CEBA4F23C7 (DE0-CV).
 
 | Arquivo | Função |

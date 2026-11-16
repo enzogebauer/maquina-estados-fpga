@@ -1,17 +1,37 @@
+-- =====================================================================
 -- Decodificador hexadecimal -> display de 7 segmentos da DE0-CV
--- Segmentos ativos em '0'. seg(0) = a, seg(1) = b, ... seg(6) = g
+--
+-- Recebe um numero de 4 bits (0 a F) e acende os segmentos que formam
+-- esse digito. E um circuito puramente combinacional (uma tabela).
+--
+-- Na DE0-CV os segmentos sao ATIVOS EM '0': '0' acende, '1' apaga.
+-- Ordem dos bits de "seg":
+--
+--        a (0)
+--       -----
+--  f(5)|     | b (1)
+--       -----  <- g (6)
+--  e(4)|     | c (2)
+--       -----
+--        d (3)
+--
+-- Os vetores abaixo estao escritos como "gfedcba" (bit 6 ... bit 0).
+-- Exemplo: o digito 1 acende so b e c -> "1111001".
+-- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity hex7seg is
     port (
-        valor : in  std_logic_vector(3 downto 0);
-        seg   : out std_logic_vector(6 downto 0)
+        valor : in  std_logic_vector(3 downto 0);   -- numero a mostrar
+        seg   : out std_logic_vector(6 downto 0)    -- segmentos g..a
     );
 end hex7seg;
 
 architecture rtl of hex7seg is
 begin
+    -- "with ... select" e a forma concorrente de um "case": para cada
+    -- valor de entrada escolhe um padrao de segmentos.
     with valor select
         seg <= "1000000" when "0000",  -- 0
                "1111001" when "0001",  -- 1
@@ -28,5 +48,5 @@ begin
                "1000110" when "1100",  -- C
                "0100001" when "1101",  -- d
                "0000110" when "1110",  -- E
-               "0001110" when others;  -- F
+               "0001110" when others;  -- F ("others" cobre tambem 'X', 'U' etc.)
 end rtl;

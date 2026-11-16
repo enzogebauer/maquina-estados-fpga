@@ -1,9 +1,13 @@
--- Pratica 6 na placa DE0-CV
---   KEY(0)     : reset (ativo em '0')
+-- =====================================================================
+-- Pratica 6 na placa DE0-CV (top-level do projeto Quartus)
+--
+--   KEY(0)     : reset (botao)
 --   SW(0)      : sentido S ('0' crescente, '1' decrescente)
 --   LEDR(1..0) : contagem em binario
 --   HEX0       : contagem em decimal
+--
 -- Clock da FSM = 1 Hz.
+-- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -20,18 +24,20 @@ end pratica6_de0cv;
 architecture estrutural of pratica6_de0cv is
     signal clk_lento : std_logic;
     signal reset     : std_logic;
-    signal q         : std_logic_vector(1 downto 0);
-    signal valor     : std_logic_vector(3 downto 0);
+    signal q         : std_logic_vector(1 downto 0);   -- saida da FSM
+    signal valor     : std_logic_vector(3 downto 0);   -- q com 4 bits, para o display
 begin
-    reset <= not KEY(0);
+    reset <= not KEY(0);             -- botao solto = '1', apertado = '0'
 
+    -- 50 MHz / (2 * 25_000_000) = 1 Hz
     u_div : entity work.div_clk
-        generic map (DIVISOR => 25_000_000)          -- 50 MHz -> 1 Hz
+        generic map (DIVISOR => 25_000_000)
         port map (clk_in => CLOCK_50, clk_out => clk_lento);
 
     u_fsm : entity work.pratica6
         port map (clk => clk_lento, reset => reset, s => SW(0), q => q);
 
+    -- O decodificador recebe 4 bits; completa q (2 bits) com zeros a esquerda.
     valor <= "00" & q;
 
     u_hex : entity work.hex7seg

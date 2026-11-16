@@ -1,8 +1,14 @@
--- Pratica 3 na placa DE0-CV
---   KEY(0)  : reset (ativo em '0')
---   LEDR(0) : saida y (2 ciclos apagado, 6 ciclos aceso)
---   LEDR(9) : clock lento da FSM (para comparar)
--- Clock da FSM = 4 Hz -> LED apagado 0,5 s e aceso 1,5 s.
+-- =====================================================================
+-- Pratica 3 na placa DE0-CV (top-level do projeto Quartus)
+--
+--   KEY(0)  : reset (botao)
+--   LEDR(0) : saida y
+--   LEDR(9) : clock lento da FSM, para comparar com y
+--
+-- Clock da FSM = 4 Hz (periodo de 0,25 s). Entao o LEDR0 fica
+-- 2 ciclos = 0,5 s apagado e 6 ciclos = 1,5 s aceso. Da para contar
+-- as piscadas do LEDR9: 2 com LEDR0 apagado, 6 com LEDR0 aceso.
+-- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -19,16 +25,17 @@ architecture estrutural of pratica3_de0cv is
     signal reset     : std_logic;
     signal y         : std_logic;
 begin
-    reset <= not KEY(0);
+    reset <= not KEY(0);             -- botao solto = '1', apertado = '0'
 
+    -- 50 MHz / (2 * 6_250_000) = 4 Hz
     u_div : entity work.div_clk
-        generic map (DIVISOR => 6_250_000)           -- 50 MHz -> 4 Hz
+        generic map (DIVISOR => 6_250_000)
         port map (clk_in => CLOCK_50, clk_out => clk_lento);
 
     u_fsm : entity work.pratica3
         port map (clk => clk_lento, reset => reset, y => y);
 
     LEDR(0)          <= y;
-    LEDR(8 downto 1) <= (others => '0');
+    LEDR(8 downto 1) <= (others => '0');   -- LEDs nao usados ficam apagados
     LEDR(9)          <= clk_lento;
 end estrutural;
