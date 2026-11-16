@@ -1,0 +1,18 @@
+# Arquivos gerados pelo Quartus
+db/
+incremental_db/
+**/output_files/*
+!**/output_files/*.sof
+simulation/
+greybox_tmp/
+*.qws
+*.bak
+c5_pin_model_dump.txt
+*_assignment_defaults.qdf
+
+# ModelSim
+work/
+transcript
+*.wlf
+vsim.wlf
+modelsim.ini
