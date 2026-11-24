@@ -15,12 +15,8 @@ Cada pasta `praticaN` é um projeto do Quartus Prime 20.1 Lite, montado para o d
 
 | Prática | Clock da FSM | Entradas | Saídas |
 |---|---|---|---|
-| 1. Contador mód. 6 | 1 Hz | KEY0 = reset | LEDR2..0 e HEX0 |
 | 2. Motor de passo (wave) | 4 Hz | KEY0 = reset, SW0 = sentido | LEDR3..0 = A,B,C,D; GPIO_0[3..0] = A..D |
 | 3. Gerador 2T0/6T0 | 4 Hz | KEY0 = reset | LEDR0 = y, LEDR9 = clock |
-| 4. Gray up/down | 1 Hz | KEY0 = reset, SW0 = X | LEDR1..0 |
-| 5. LED com botão | 100 Hz | KEY0 = reset, KEY1 = botão | LEDR0 |
-| 6. Contador mód. 4 com sentido | 1 Hz | KEY0 = reset, SW0 = S | LEDR1..0 e HEX0 |
 | 7. PWM x/7 | ~7 kHz | KEY0 = reset, SW2..0 = x | LEDR0 = brilho, HEX0 = x |
 
 ## Como usar

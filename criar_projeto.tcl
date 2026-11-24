@@ -1,5 +1,5 @@
 # Cria (ou recria) o projeto Quartus de uma pratica para a placa DE0-CV.
-# Uso: quartus_sh -t criar_projeto.tcl <n>     (n = 1..7, rodar dentro da pasta praticaN)
+# Uso: quartus_sh -t criar_projeto.tcl <n>     (n = 2, 3 ou 7, rodar dentro da pasta praticaN)
 package require ::quartus::project
 
 set n    [lindex $quartus(args) 0]
