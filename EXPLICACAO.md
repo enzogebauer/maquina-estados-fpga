@@ -4,9 +4,7 @@ Este documento explica, para todo o grupo, como cada prática foi resolvida e po
 
 Grupo: Enzo, Orlando, Bernardo e Henrique.
 
-Este repositório contém as práticas 2, 3 e 7.
-
-As práticas extras (UART, RFID, processador etc.) **não** estão neste repositório.
+Este repositório contém as práticas 2, 3 e 7 e a prática extra escolhida: **Conversor Morse Interativo com FSM Multimodo** (pasta `pratica_extra`).
 
 ## 1. Como o repositório está organizado
 
@@ -40,7 +38,7 @@ A diferença entre os dois tipos está na lógica de saída:
 |---|---|---|
 | A saída depende de | só do estado atual | estado atual **e** entradas |
 | Quando a saída muda | só depois de uma borda de clock | na hora em que a entrada muda |
-| Práticas | 2 e 3 | 7 |
+| Práticas | 2, 3 e extra (as três FSMs) | 7 e extra (saída `traco` do decodificador) |
 
 ### 2.2 A "receita" de VHDL usada em todas as FSMs
 
@@ -114,7 +112,15 @@ Se a simulação terminar mostrando só `FIM DA SIMULACAO - pratica N` e `Errors
 
 ## 3. As práticas
 
+Os diagramas em PNG estão na pasta `diagramas/` e foram desenhados no [Finite State Machine Designer](https://madebyevan.com/fsm/). A notação é a do slide 19:
+
+- **Moore:** a saída fica dentro do círculo, `ESTADO/saída` (ex.: `FA/1000` = estado FA com saídas A,B,C,D = 1,0,0,0).
+- **Mealy:** a saída fica na seta, `entrada / saída` (ex.: na prática 7, `y=(x≥5)` diz que, nesse estado, `y = 1` se `x ≥ 5`).
+- A seta sem origem marca o estado inicial (reset).
+
 ### Prática 2: motor de passo unipolar, modo wave
+
+![Diagrama da prática 2](diagramas/pratica2_motor_passo.png)
 
 **Ideia:** no modo wave só uma bobina fica energizada por vez. Cada estado é "qual bobina está ligada". A entrada `sentido` escolhe se a máquina anda para a frente ou para trás na sequência.
 
@@ -147,6 +153,8 @@ stateDiagram-v2
 
 ### Prática 3: gerador de sinal (2T0 baixo, 6T0 alto)
 
+![Diagrama da prática 3](diagramas/pratica3_gerador.png)
+
 **Ideia:** o período completo tem 2 + 6 = 8 ciclos de clock, então a máquina tem 8 estados em fila. Os próprios estados "contam o tempo": a saída fica baixa nos dois primeiros e alta nos outros seis.
 
 ```mermaid
@@ -173,6 +181,8 @@ stateDiagram-v2
 - **Alternativa que o professor pode citar:** usar 2 estados e um contador. A versão com 8 estados foi escolhida por ser a mais direta de explicar com diagrama de estados.
 
 ### Prática 7: PWM com ciclo de trabalho x/7
+
+![Diagrama da prática 7](diagramas/pratica7_pwm.png)
 
 **Ideia:** o período do PWM tem 7 ciclos de clock, então há 7 estados em fila (E0 a E6). O estado diz em qual ciclo do período estamos. A entrada `x` (0 a 7) diz quantos desses ciclos a saída fica alta.
 
@@ -213,6 +223,151 @@ Como na figura do slide, `y` fica baixo no início do período e alto nos **últ
 - **Na simulação:** para cada `x`, o testbench conta quantos dos 7 ciclos têm `y = 1` e confere que o total é igual a `x`.
 - **Na placa:** SW2..0 escolhem `x` em binário, LEDR0 muda de brilho e HEX0 mostra o valor de `x`.
 
+### Prática Extra: Conversor Morse Interativo com FSM Multimodo
+
+Pasta `pratica_extra/`. O enunciado pede três coisas, e cada uma virou uma máquina de estados:
+
+| Pedido do slide | FSM | Arquivo |
+|---|---|---|
+| Codificar caracteres em sinais Morse (LED ou buzzer) | Codificadora | `morse_codificador.vhd` |
+| Decodificar Morse pelo tempo de pressão do botão | Decodificadora | `morse_decodificador.vhd` |
+| Alternar os modos por um botão de função | Seletora de modo | `morse.vhd` |
+
+O `morse_pkg.vhd` guarda as tabelas (Morse e letras no display) e não tem estado nenhum: é só lógica combinacional consultada pelas FSMs.
+
+**Ideia geral: FSMs hierárquicas.** A FSM de modo é a "chefe": ela liga uma das outras duas pelo sinal `ativo`. As duas recebem o mesmo botão (KEY1), mas só a que está ativa reage. Fazer uma FSM gigante com todos os estados misturados também funcionaria, mas o diagrama ficaria ilegível. Assim cada diagrama tem 3 a 5 estados.
+
+**Como o Morse é representado.** Cada letra tem `tam` (quantos símbolos) e `padrao` (os símbolos, `0` = ponto, `1` = traço, alinhados à direita). Exemplo: A = `.-` vira `tam = 2`, `padrao = "0001"`. O `tam` é necessário porque E (`.`), I (`..`), S (`...`) e H (`....`) têm o mesmo `padrao = "0000"`.
+
+**Tempos do Morse** (no código, "unidade" é o tempo de um ponto):
+
+| Elemento | Duração |
+|---|---|
+| Ponto | 1 unidade com LED aceso |
+| Traço | 3 unidades com LED aceso |
+| Pausa entre símbolos da mesma letra | 1 unidade apagado |
+| Pausa depois da letra | 3 unidades apagado |
+
+#### FSM de modo (Moore)
+
+![FSM de modo](diagramas/extra_morse_modo.png)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> CODIFICA: reset
+    CODIFICA --> VAI_DECODIFICAR: func=1
+    VAI_DECODIFICAR --> DECODIFICA: func=0
+    DECODIFICA --> VAI_CODIFICAR: func=1
+    VAI_CODIFICAR --> CODIFICA: func=0
+```
+
+| Estado | Modo (`modo_dec`) |
+|---|---|
+| CODIFICA | 0 (codificar) |
+| VAI_DECODIFICAR | 1 |
+| DECODIFICA | 1 (decodificar) |
+| VAI_CODIFICAR | 0 |
+
+É a mesma estrutura da prática 5 (LED com botão): os estados `VAI_...` esperam o botão ser **solto**. Sem eles, como um aperto dura muitos clocks, o modo ficaria trocando a cada clock enquanto o botão estivesse apertado.
+
+#### FSM codificadora (Moore)
+
+![FSM codificadora](diagramas/extra_morse_codificador.png)
+
+No diagrama, "1u" e "3u" são 1 e 3 unidades de tempo, e "contando" é o laço em que o contador `cont` ainda não chegou ao fim.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> OCIOSO: reset
+    OCIOSO --> PONTO: btn=1 e 1º símbolo = ponto
+    OCIOSO --> TRACO: btn=1 e 1º símbolo = traço
+    PONTO --> PAUSA: 1 unidade e ainda há símbolos
+    TRACO --> PAUSA: 3 unidades e ainda há símbolos
+    PAUSA --> PONTO: 1 unidade e próximo = ponto
+    PAUSA --> TRACO: 1 unidade e próximo = traço
+    PONTO --> FIM: 1 unidade e era o último
+    TRACO --> FIM: 3 unidades e era o último
+    FIM --> OCIOSO: 3 unidades e btn=0
+```
+
+| Estado | `sinal` (LED) |
+|---|---|
+| OCIOSO, PAUSA, FIM | 0 |
+| PONTO, TRACO | 1 |
+
+- **Tipo:** Moore. O LED depende só do estado.
+- **Contador junto da FSM:** PONTO dura 1 unidade e TRACO 3, e cada unidade são 20 clocks na placa. Em vez de criar um estado por clock (como a prática 3, que tem 8 estados para 8 clocks), a FSM tem um contador `cont`. O estado diz *o que* está acontecendo; o contador diz *há quanto tempo*. Isso se chama FSM com datapath (FSMD). Se o professor perguntar "isso ainda é máquina de estados?": sim, o comportamento é definido pelo `case estado is`; o contador é só um registrador auxiliar que a FSM controla.
+- **A letra é copiada no início:** em OCIOSO, ao apertar o botão, a letra das chaves é guardada no registrador `padrao`. Se alguém mexer nas chaves no meio da transmissão, a letra que está saindo não muda.
+- **`pos`:** indica qual símbolo está saindo. Começa em `tam - 1` (primeiro símbolo) e desce até 0 (último).
+- **FIM espera soltar o botão:** sem isso, segurar KEY1 faria a letra repetir sem parar.
+
+#### FSM decodificadora (Moore, com uma saída de Mealy)
+
+![FSM decodificadora](diagramas/extra_morse_decodificador.png)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> ESPERA: reset
+    ESPERA --> APERTADO: btn=1
+    APERTADO --> SOLTO: btn=0 / guarda ponto ou traço
+    SOLTO --> APERTADO: btn=1
+    SOLTO --> ESPERA: btn=0 por FIM_LETRA / mostra a letra
+```
+
+- **Como o tempo vira símbolo:** em APERTADO o contador soma 1 a cada clock. Quando o botão é solto, se `cont >= LIMIAR_TRACO` (0,3 s na placa) o símbolo é traço; senão, ponto.
+- **Registrador de deslocamento:** cada símbolo novo entra pela direita (`padrao <= padrao(2 downto 0) & bit_novo`). No fim, o primeiro símbolo está no bit `tam - 1`, no mesmo formato da tabela, e a função `decodifica` só compara.
+- **Fim da letra:** se o botão fica solto por `FIM_LETRA` clocks (1 s na placa), a máquina procura na tabela e guarda o resultado. Se não existir letra (ex.: `..--`) ou se forem 5 símbolos ou mais, o display mostra `-`.
+- **Contador saturado:** em APERTADO o contador para no máximo em vez de "dar a volta". Sem isso, segurar o botão muito tempo poderia zerar o contador e transformar um traço em ponto.
+- **Saída de Mealy `traco` (LEDR1):** acende quando o botão está apertado há tempo suficiente para virar traço.
+  ```vhdl
+  traco <= '1' when estado = APERTADO and btn = '1' and cont >= LIMIAR_TRACO else '0';
+  ```
+  Ela usa o estado **e** a entrada `btn`, como no slide 18 (`WHEN B => z <= w`). Por isso apaga no instante em que o botão é solto, sem esperar o clock. O testbench confere isso 1 ns depois de soltar o botão.
+
+#### Nuances de VHDL que aparecem aqui
+
+| Nuance | Onde | Explicação curta |
+|---|---|---|
+| Reset assíncrono **e** síncrono | codificador e decodificador | `reset` (KEY0) age na hora, fora do `rising_edge`. `ativo = '0'` é testado **dentro** do `rising_edge`, então só age na borda: é um reset síncrono, usado ao trocar de modo. |
+| `variable` vs `signal` | `m` no codificador, `bit_novo` no decodificador | A variável recebe o valor **na hora**, dentro do processo. Um sinal só muda no fim do processo. Por isso `bit_novo` pode ser calculado e usado na mesma passada. |
+| `for` não é laço no tempo | `decodifica` no pacote | O sintetizador "desenrola" o laço em 26 comparadores em paralelo. Tudo acontece em um único clock. |
+| `when PONTO \| TRACO =>` | codificador | Um único ramo do `case` trata dois estados. |
+| `record` | `morse_t` no pacote | Agrupa `tam` e `padrao`, como um `struct` em C. |
+| `generic` | tempos (`UNIDADE`, `LIMIAR_TRACO`, `FIM_LETRA`) | A placa usa 20/30/100 clocks; o testbench usa 2/4/8 para simular rápido. O código é o mesmo. |
+| Sincronizador de 2 flip-flops | `morse_de0cv.vhd` | O botão muda a qualquer momento, sem respeitar o clock. Dois flip-flops em série evitam que um valor "indeciso" (metaestabilidade) chegue às FSMs. |
+| Letras no 7 segmentos | `letra_7seg` no pacote | Algumas letras são aproximações (K, M, W, X) e outras aparecem minúsculas (b, d, n, r, t). |
+
+#### Na placa
+
+| Controle | Função |
+|---|---|
+| KEY0 | Reset (volta para codificar) |
+| KEY1 | Botão Morse: envia a letra (codificar) ou tecla pontos e traços (decodificar) |
+| KEY2 | Botão de função: troca o modo |
+| SW4..0 | Letra a codificar em binário: 0 = A, 1 = B, ..., 25 = Z. Valores 26 a 31 mostram `-` e não enviam nada. |
+| LEDR0 / GPIO_0[0] | Sinal Morse (em decodificar, eco do botão). Um buzzer ativo pode ser ligado no GPIO_0[0]. |
+| LEDR1 | Decodificar: "este aperto já é traço" |
+| LEDR5..2 | Decodificar: um LED por símbolo já digitado |
+| LEDR9 | Modo (aceso = decodificar) |
+| HEX1 | `C` = codificar, `d` = decodificar |
+| HEX0 | Letra das chaves (codificar) ou última letra decodificada |
+
+Letras úteis nas chaves: A = `00000`, E = `00100`, S = `10010`, O = `01110`, T = `10011`. Para mostrar "SOS": S, O, S.
+
+- **Simular direto no ModelSim** (a ordem importa: o pacote primeiro, porque os outros arquivos usam ele):
+  ```
+  vlib work
+  vcom -2008 morse_pkg.vhd morse_codificador.vhd morse_decodificador.vhd morse.vhd tb_morse.vhd
+  vsim tb_morse
+  add wave *
+  add wave /tb_morse/dut/modo /tb_morse/dut/u_cod/estado /tb_morse/dut/u_dec/estado
+  run -all
+  ```
+- **Na simulação (`tb_morse`):** confere as piscadas de A, E, T, Q e S ciclo a ciclo, que segurar o botão não repete a letra, a troca de modo, a decodificação de S, K, Q, T, E, A e de duas sequências inválidas, a saída de Mealy e a volta para codificar. Termina com `FIM DA SIMULACAO - pratica extra (Morse)` e 0 erros.
+
 ## 4. Como rodar
 
 ### Compilar
@@ -252,7 +407,10 @@ A linha `add wave /tb_pratica2/dut/estado` mostra o nome do estado atual na form
 
 | Item | Situação |
 |---|---|
-| Simulação funcional das 3 FSMs no ModelSim | Feita, 0 erros em todas |
+| Simulação funcional das práticas 2, 3 e 7 no ModelSim | Feita, 0 erros em todas |
+| Simulação funcional da prática extra (Morse) | Feita com o simulador nvc (VHDL-2008), 0 erros. **Ainda não rodada no ModelSim** |
+| Compilação da prática extra no Quartus | **Não feita**: não há `.sof` em `pratica_extra/output_files`. Compilar antes de gravar. |
+| Pinos novos da prática extra (KEY2, SW3, SW4, HEX1) | Tirados do manual da DE0-CV; conferir no Pin Planner |
 | Compilação completa no Quartus, gerando os `.sof` | Feita, 0 erros em todas |
 | Gravação na placa e teste com LEDs, botões e display | **Não feita** |
 | Motor de passo real ligado ao GPIO (prática 2) | **Não feito** |
