@@ -12,9 +12,7 @@ Passo a passo para testar cada prática na DE0-CV e gravar um vídeo de cada uma
 - [ ] Repositório atualizado no notebook (`git pull`).
 - [ ] Celular carregado, com espaço para uns 6 vídeos curtos.
 - [ ] Algo para apoiar o celular por cima da placa (suporte, pilha de livros).
-- [ ] **6 fios jumper fêmea-fêmea separados** para o motor. Os 2 cabos de 3 fios do kit não servem como estão, porque o conector de plástico junta 3 fios e eles precisam ir em pinos separados. Duas saídas:
-  - levantar a trava de plástico de cada ponta com uma pinça ou agulha e puxar os fios um a um; ou
-  - pedir 6 jumpers fêmea-fêmea no lab.
+- [ ] **6 fios fêmea-fêmea** para o motor: são os 2 cabos de 3 fios do kit. Os fios só estão grudados lado a lado; descole cada cabo puxando os fios para os lados (como fita), uns 10 cm em cada ponta, para cada fio alcançar o seu pino.
 - [ ] Um pedaço de fita adesiva, para fazer uma "bandeirinha" no eixo do motor.
 
 ## 1. Preparar a placa (sempre que ligar)
@@ -147,24 +145,50 @@ Com 4 passos por segundo o eixo parece parado: esse motor (28BYJ-48) precisa de 
 
 **Desligue a placa (botão vermelho) antes de ligar qualquer fio.**
 
-O motor já vem encaixado na plaquinha verde (driver ULN2003). Só precisa ligar a plaquinha verde no conector **GPIO 0** da DE0-CV (o conector preto grande da esquerda, dos dois da direita da placa).
+O motor já vem encaixado na plaquinha verde (driver ULN2003) pelo conector branco; não mexa nele. Só falta ligar a plaquinha verde no conector **GPIO 0** da DE0-CV com 6 fios.
 
-1. [ ] Ache o **pino 1** do GPIO 0. Procure o número "1" ou uma seta impressa na placa ao lado do conector, ou o pino com a ilha quadrada. Os pinos ímpares (1, 3, 5...) ficam numa fileira e os pares (2, 4, 6...) na outra.
-2. [ ] Confira no manual da DE0-CV (figura do conector GPIO, "JP1") que o **pino 11 é 5V** e o **pino 12 é GND**.
-3. [ ] Ligue os 6 fios:
+**1. Separar os fios.** Os 2 cabos de 3 fios do kit são os 6 fios. Eles só estão grudados lado a lado: puxe os fios para os lados, como quem descola uma fita, uns 10 cm em cada ponta. Cada fio tem o seu conector fêmea em cada ponta.
 
-| Plaquinha verde | GPIO 0 da DE0-CV | Sinal |
-|---|---|---|
-| IN1 | pino **4** | fase A |
-| IN2 | pino **3** | fase B |
-| IN3 | pino **2** | fase C |
-| IN4 | pino **1** | fase D |
-| **+** (perto do "5-12V") | pino **11** | 5V |
-| **−** | pino **12** | GND |
+**2. Ligar seguindo a tabela.** As cores são sugestão; vermelho no 5V e marrom no GND seguem a convenção e evitam confusão.
 
-4. [ ] O jumper preto ao lado do "5-12V" da plaquinha verde tem que ficar **colocado**. Ele liga a alimentação do motor.
-5. [ ] **Confira duas vezes o fio do 5V.** Ele **nunca** pode encostar nos pinos 1 a 4: os pinos do FPGA são de 3,3 V e queimam com 5 V.
-6. [ ] Cole a fita no eixo do motor, como uma bandeirinha, para a rotação aparecer no vídeo.
+| Fio (sugestão) | Plaquinha verde | GPIO 0 da DE0-CV | Sinal |
+|---|---|---|---|
+| Laranja (cabo 1) | IN1 | pino **4** | fase A |
+| Vermelho (cabo 1) | IN2 | pino **3** | fase B |
+| Marrom (cabo 1) | IN3 | pino **2** | fase C |
+| Laranja (cabo 2) | IN4 | pino **1** | fase D |
+| **Vermelho (cabo 2)** | **+** (perto do "5-12V") | pino **11** | 5V |
+| **Marrom (cabo 2)** | **−** (perto do "5-12V") | pino **12** | GND |
+
+**3. Lado da plaquinha verde.**
+
+- **IN1 a IN4:** ficam na lateral, com o nome impresso. Encaixe os 4 fios ali, em ordem.
+- **+ e −:** ficam no conectorzinho perto de onde está escrito "5-12V". Siga o que está impresso na plaquinha para saber qual é qual.
+- **Jumper:** a pecinha preta de plástico ao lado do "5-12V" tem que ficar **colocada**. Sem ela o motor fica sem energia.
+
+**4. Lado da DE0-CV.**
+
+- **Conector:** o GPIO 0 é o conector preto comprido **mais perto do chip FPGA e dos botões KEY**, com "GPIO 0" impresso na ponta. O outro, mais perto da borda da placa, é o GPIO 1; não use.
+- **Cuidado com as letras "D" impressas** ao lado do conector (D6, D10, D13, D33...). Elas são nomes de componentes da placa (diodos), **não** são números de pino. Ignore.
+- **Pino 1:** é o pino do canto marcado com um **triângulo pequeno (▼)** impresso na placa, na ponta do conector que fica do lado do cartão micro SD.
+- **Fileiras:** o conector tem 2 fileiras de 20 pinos. Segurando a placa com o GPIO 0 na horizontal e o triângulo à direita:
+
+  ```
+                       ... 11   9   7   5   3   1 ▼   <- fileira do lado do FPGA (ímpares)
+                       ... 12  10   8   6   4   2     <- fileira do lado do GPIO 1 (pares)
+  ```
+
+  Conte da direita para a esquerda, a partir do triângulo.
+- **IN1 a IN4:** os pinos 1, 2, 3 e 4 são os 2 primeiros de cada fileira, na ponta do pino 1.
+- **5V e GND:** o pino 11 é o **6º da fileira dos ímpares** e o pino 12 é o **6º da fileira dos pares**. Conte com o dedo.
+- **Conferência:** se possível, confira no manual da DE0-CV (figura do conector GPIO, "JP1") que o pino 11 é 5V e o pino 12 é GND. Se o lab tiver multímetro, meça com a placa ligada e sem fios: entre os pinos 11 e 12 tem que dar **5 V**.
+
+**5. Conferir antes de ligar a placa.**
+
+- [ ] O fio do 5V está no pino 11 e **não encosta** em nenhum outro pino. Os pinos 1 a 4 são de 3,3 V e queimam com 5 V.
+- [ ] Nenhum fio dos pinos 1 a 4 está na fileira errada.
+- [ ] O jumper do "5-12V" da plaquinha verde está colocado.
+- [ ] Cole a fita no eixo do motor como uma bandeirinha, para a rotação aparecer no vídeo.
 
 ### 7.3 Testar
 
