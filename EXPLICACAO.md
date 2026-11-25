@@ -81,7 +81,7 @@ A DE0-CV tem um clock de 50 MHz. Nessa velocidade um contador daria 50 milhões 
 | DIVISOR | Clock da FSM | Usado em |
 |---|---|---|
 | 6 250 000 | 4 Hz | práticas 2 e 3 |
-| 3 571 | ~7 kHz | prática 7 |
+| 3 000 000 | ~8,3 Hz | prática 7 |
 
 Para mudar a velocidade, troque o número no `generic map` do top-level e recompile.
 
@@ -219,9 +219,9 @@ Como na figura do slide, `y` fica baixo no início do período e alto nos **últ
   ```
   `estado_t'pos(estado)` devolve a posição do estado no tipo (E0 = 0 ... E6 = 6), e `to_integer(unsigned(x))` converte o vetor `x` em número inteiro.
 - **Por que o período tem 7 ciclos e não 8:** com 7 ciclos, `x` de 0 a 7 cobre exatamente de 0% a 100%, como na tabela do slide.
-- **Por que o brilho do LED muda:** o LED pisca a cerca de 1 kHz, rápido demais para o olho. O olho enxerga a média, então quanto maior a fração do tempo aceso, mais forte o brilho.
+- **Velocidade do PWM na placa:** o clock da FSM é ~8,3 Hz, então o período de 7 ciclos dura ~0,84 s e dá para ver o LED piscar. Em cada período ele fica aceso por `x` dos 7 ciclos: com x = 0 fica sempre apagado e com x = 7 fica sempre aceso (não pisca). Com um clock bem mais rápido (por exemplo `DIVISOR => 3_571`, ~7 kHz) o olho não veria as piscadas, só a média, e o LED pareceria mudar de brilho.
 - **Na simulação:** para cada `x`, o testbench conta quantos dos 7 ciclos têm `y = 1` e confere que o total é igual a `x`.
-- **Na placa:** SW2..0 escolhem `x` em binário, LEDR0 muda de brilho e HEX0 mostra o valor de `x`.
+- **Na placa:** SW2..0 escolhem `x` em binário, LEDR0 pisca ficando aceso `x` de cada 7 ciclos e HEX0 mostra o valor de `x`.
 
 ### Prática Extra: Conversor Morse Interativo com FSM Multimodo
 

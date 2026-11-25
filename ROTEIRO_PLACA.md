@@ -87,19 +87,19 @@ Arquivo: `pratica7/output_files/pratica7.sof` (já compilado).
 
 | SW2 SW1 SW0 | HEX0 | LEDR0 |
 |---|---|---|
-| 0 0 0 | 0 | apagado |
-| 0 0 1 | 1 | bem fraco |
-| 0 1 0 | 2 | fraco |
-| 0 1 1 | 3 | |
-| 1 0 0 | 4 | médio |
-| 1 0 1 | 5 | |
-| 1 1 0 | 6 | forte |
-| 1 1 1 | 7 | brilho máximo (sempre aceso) |
+| 0 0 0 | 0 | sempre apagado |
+| 0 0 1 | 1 | pisca curto (aceso 1 de 7 ciclos) |
+| 0 1 0 | 2 | aceso 2 de 7 ciclos |
+| 0 1 1 | 3 | aceso 3 de 7 ciclos |
+| 1 0 0 | 4 | aceso 4 de 7 ciclos |
+| 1 0 1 | 5 | aceso 5 de 7 ciclos |
+| 1 1 0 | 6 | quase sempre aceso (apaga 1 de 7 ciclos) |
+| 1 1 1 | 7 | sempre aceso (não pisca) |
 
-5. [ ] Compare o LEDR0 com os LEDR9..7, que repetem as chaves com brilho total.
-6. [ ] Volte de 7 para 0 para mostrar que o brilho desce.
+5. [ ] Em cada valor, espere uns 2 ou 3 períodos (~0,84 s cada) para dar para ver a proporção aceso/apagado.
+6. [ ] Volte de 7 para 0 para mostrar que o tempo aceso diminui.
 
-**Se der errado:** se o LED parecer piscar no vídeo, mas não ao vivo, é a câmera (o PWM pisca a ~1 kHz). Ao vivo deve parecer estável.
+**Se der errado:** o clock da FSM é ~8,3 Hz, então o LED deve piscar de forma visível. Com x = 0 ele fica apagado e com x = 7 fica aceso sem piscar, e isso é o esperado.
 
 ---
 

@@ -29,7 +29,7 @@ begin
 
     -- 50 MHz / (2 * 6_250_000) = 4 Hz
     u_div : entity work.div_clk
-        generic map (DIVISOR => 6_250_000)
+        generic map (DIVISOR => 15_250_000)
         port map (clk_in => CLOCK_50, clk_out => clk_lento);
 
     u_fsm : entity work.pratica3

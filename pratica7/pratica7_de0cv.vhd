@@ -7,12 +7,14 @@
 --   LEDR(9..7) : repetem as chaves, para conferir o valor de x
 --   HEX0       : mostra x em decimal
 --
--- Por que o brilho muda: o LED pisca rapido demais para o olho ver.
--- O olho enxerga a MEDIA, entao quanto maior a fracao do tempo aceso
--- (x/7), mais forte parece o brilho.
+-- Clock da FSM ~ 8,3 Hz (cada ciclo dura 0,12 s). Como o periodo do
+-- PWM tem 7 ciclos, o periodo inteiro dura ~0,84 s (~1,2 Hz). Nessa
+-- velocidade da para VER o LED piscar: em cada periodo ele fica aceso
+-- durante x dos 7 ciclos (x = 0 sempre apagado, x = 7 sempre aceso).
 --
--- Clock da FSM ~ 7 kHz. Como o periodo do PWM tem 7 ciclos, o LED
--- pisca a ~1 kHz, bem acima do que o olho percebe.
+-- Com um clock bem mais rapido (ex.: DIVISOR => 3_571, ~7 kHz) o LED
+-- piscaria rapido demais para o olho, que enxergaria so a MEDIA: o
+-- brilho pareceria mudar conforme x.
 -- =====================================================================
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,16 +30,16 @@ entity pratica7_de0cv is
 end pratica7_de0cv;
 
 architecture estrutural of pratica7_de0cv is
-    signal clk_pwm : std_logic;                      -- clock da FSM (~7 kHz)
+    signal clk_pwm : std_logic;                      -- clock da FSM (~8,3 Hz)
     signal reset   : std_logic;
     signal y       : std_logic;                      -- saida PWM
     signal valor   : std_logic_vector(3 downto 0);   -- x com 4 bits, para o display
 begin
     reset <= not KEY(0);             -- botao solto = '1', apertado = '0'
 
-    -- 50 MHz / (2 * 3_571) = ~7 kHz
+    -- 50 MHz / (2 * 3_000_000) = ~8,3 Hz
     u_div : entity work.div_clk
-        generic map (DIVISOR => 3_571)
+        generic map (DIVISOR => 3_000_000)
         port map (clk_in => CLOCK_50, clk_out => clk_pwm);
 
     u_fsm : entity work.pratica7
@@ -48,7 +50,7 @@ begin
     u_hex : entity work.hex7seg
         port map (valor => valor, seg => HEX0);
 
-    LEDR(0)          <= y;                   -- o LED "dimerizado"
+    LEDR(0)          <= y;                   -- saida PWM
     LEDR(6 downto 1) <= (others => '0');     -- LEDs nao usados ficam apagados
     LEDR(9 downto 7) <= SW;                  -- mostra as chaves
 end estrutural;

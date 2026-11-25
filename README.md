@@ -21,7 +21,7 @@ Cada pasta `praticaN` é um projeto do Quartus Prime 20.1 Lite, montado para o d
 |---|---|---|---|
 | 2. Motor de passo (wave) | 4 Hz | KEY0 = reset, SW0 = sentido | LEDR3..0 = A,B,C,D; GPIO_0[3..0] = A..D |
 | 3. Gerador 2T0/6T0 | 4 Hz | KEY0 = reset | LEDR0 = y, LEDR9 = clock |
-| 7. PWM x/7 | ~7 kHz | KEY0 = reset, SW2..0 = x | LEDR0 = brilho, HEX0 = x |
+| 7. PWM x/7 | ~8,3 Hz | KEY0 = reset, SW2..0 = x | LEDR0 = PWM, HEX0 = x |
 | Extra. Conversor Morse multimodo | 100 Hz | KEY0 = reset, KEY1 = botão Morse, KEY2 = função, SW4..0 = letra | LEDR0/GPIO_0[0] = Morse, LEDR1 = traço, LEDR5..2 = símbolos, LEDR9 = modo, HEX0 = letra, HEX1 = modo |
 
 ## Como usar
